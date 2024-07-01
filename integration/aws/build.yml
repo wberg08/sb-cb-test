@@ -1,0 +1,302 @@
+#File to describe environments. Used by the build script.
+config:
+  suffix: '.config'
+  source: 'transforms'
+  account:
+    include:
+      - 'config-kcom'
+      - 'config-project-[project_name]'
+      - '[project_name]/config-account-[account_name]'
+  environment:
+    include:
+      - 'config-kcom'
+      - 'config-project-[project_name]'
+      - '[project_name]/config-account-[account_name]'
+      - '[project_name]/config-environment-[env_name]'
+      - '[project_name]/config-environment-[env_name]-[env_num]'
+modules:
+  # Module Prefix must not contain underscores '_' this is the seperator for the name / prefix.
+  target: 'generated_code'
+  account:
+    source: 'modules/account'
+    prefix: 'module-account_'
+    target: 'accounts'
+    # GuardDuty takes time to run, best left as the last module for faster fail on the others.
+    ordering:
+      - 'account-common-resources'
+      - 'codebuild-cross-account-role'
+      - 'pam-cross-account-roles'
+      - 's3-audit'
+      - 'account-s3-buckets'
+      - 's3-data-backups-monitor'
+      - 'kcomiam-common-cross-account-roles'
+      - 'kcomiam-shared-cross-account-roles'
+      - 'kcomiam-stages-cross-account-roles'
+      - 'kcomiam-kms-key'
+      - 'kms-iam-app-key'
+      - 'kms-sc-app-build-key'
+      - 'amibake-kms-key'
+      - 'adhoc-ami-bake-kcom'
+      - 'adhoc-ami-bake-sb'
+      - 'kcomsb-stages-user-and-groups'
+      - 'kcomsb-stages-cross-account-roles'
+      - 'cloudwatch-smartalerter'
+      - 'cloudwatch-alarms'
+      - 'dynamodb-backup'
+      - 'codepipeline-cloudwatch-event-rules'
+      - 'codepipeline-dashboard'
+      - 'cloudwatch-log-group-retention'
+      - 'codecommit-common-repo'
+      - 'codecommit-shared-repo'
+      - 'codecommit-sync'
+      - 'codecommit-git2cc-sync-adhoc'
+      - 'waf-shield'
+      - 'waf-web-acl'
+      - 'kcomsb-dns-htz-global-management'
+      - 'kcomsb-dns-htz-soc-management'
+      - 'squid-proxy'
+      - 'update-nlb-lambda'
+      - 'update-waf-acls'
+      - 'account-clean-volumes-lambda'
+      - 'guardduty'
+      - 'oauth-monitor'
+      - 'ssm-documents'
+      - 'check-live-side-lambda'
+      - 'invoke-ds-replication-ssm-document-lambda'
+      - 'delete-prelive-side-lambda'
+      - 'deployment-automation-step-function'
+      - 'extract-changed-users-feed-to-krome-lambda'
+  environment:
+    source: 'modules/environment'
+    prefix: 'module_'
+    target: 'environments'
+    ordering:
+      - 'environment-common-resources'
+      - 'base-storage-stages'
+      - 'base-storage-common'
+      - 'send-aisp-consent-stream-sqs-lambda'
+      - 'send-tpp-stream-sqs-lambda'
+      - 'base-dynamodb'
+      - 'base-codecommit-clone'
+      - 'base-kcomiam-networking'
+      - 'base-kcomsb-networking'
+      - 'application'
+deployment:
+  suffix: '-deployer.sh'
+projects:
+  kcomiam:
+    accounts:
+      kcomiamcommonservices:
+        build: true
+        allow_remove: false
+        config: blue
+        environments:
+          cmns01:
+            name: 'cmns'
+            number: '01'
+            build: true
+            allow_remove: false
+            config: blue
+      kcomiamsbshared:
+        build: true
+        allow_remove: false
+        config: blue
+        environments:
+          shr01:
+            name: 'shr'
+            number: '01'
+            build: true
+            allow_remove: true
+            config: blue
+      kcomiamsbdev:
+        build: true
+        allow_remove: false
+        config: blue
+        environments:
+          dev01:
+            name: 'dev'
+            number: '01'
+            build: true
+            allow_remove: false
+            config: blue
+          dev02:
+            name: 'dev'
+            number: '02'
+            build: true
+            allow_remove: false
+            config: blue
+          dev03:
+            name: 'dev'
+            number: '03'
+            build: true
+            allow_remove: false
+            config: blue
+          dev04:
+            name: 'dev'
+            number: '04'
+            build: true
+            allow_remove: false
+            config: blue
+          dev05:
+            name: 'dev'
+            number: '05'
+            build: true
+            allow_remove: false
+            config: blue
+      kcomiamsbsit:
+        build: true
+        allow_remove: false
+        config: blue
+        environments:
+          sit01:
+            name: 'sit'
+            number: '01'
+            build: true
+            allow_remove: false
+            config: blue
+          sit02:
+            name: 'sit'
+            number: '02'
+            build: true
+            allow_remove: false
+            config: blue
+          sit03:
+            name: 'sit'
+            number: '03'
+            build: true
+            allow_remove: false
+            config: blue
+  kcomsb:
+    accounts:
+      sbiamsandboxdev:
+        build: true
+        allow_remove: false
+        config: blue
+        environments:
+          tsdev01:
+            name: 'tsdev'
+            number: '01'
+            build: true
+            allow_remove: false
+            config: blue
+      sbiamsandboxprod:
+        build: true
+        allow_remove: false
+        config: blue
+        environments:
+          tsprod01:
+            name: 'tsprod'
+            number: '01'
+            build: true
+            allow_remove: false
+            config: blue
+      sbiamdev:
+        build: true
+        allow_remove: false
+        config: blue
+        environments:
+          dev01:
+            name: 'dev'
+            number: '01'
+            build: true
+            allow_remove: false
+            config: blue
+      sbiamsit:
+        build: true
+        allow_remove: false
+        config: blue
+        environments:
+          sit01:
+            name: 'sit'
+            number: '01'
+            build: true
+            allow_remove: false
+            config: blue
+      sbiamsitb:
+        build: true
+        allow_remove: false
+        config: blue
+        environments:
+          sitb01:
+            name: 'sitb'
+            number: '01'
+            build: true
+            allow_remove: false
+            config: blue
+      sbiamsitc:
+        build: true
+        allow_remove: false
+        config: blue
+        environments:
+          sitc01:
+            name: 'sitc'
+            number: '01'
+            build: true
+            allow_remove: false
+            config: blue
+      sbiamuat:
+        build: true
+        allow_remove: false
+        config: blue
+        environments:
+          uat01:
+            name: 'uat'
+            number: '01'
+            build: true
+            allow_remove: false
+            config: blue
+      sbiamuatb:
+        build: true
+        allow_remove: false
+        config: blue
+        environments:
+          uatb01:
+            name: 'uatb'
+            number: '01'
+            build: true
+            allow_remove: false
+            config: blue
+      sbiamppe:
+        build: true
+        allow_remove: false
+        config: blue
+        environments:
+          ppe01:
+            name: 'ppe'
+            number: '01'
+            build: true
+            allow_remove: false
+            config: blue
+      sbiamppeb:
+        build: true
+        allow_remove: false
+        config: blue
+        environments:
+          ppeb01:
+            name: 'ppeb'
+            number: '01'
+            build: true
+            allow_remove: false
+            config: blue
+      sbiamffppe:
+        build: true
+        allow_remove: false
+        config: blue
+        environments:
+          ffppe01:
+            name: 'ffppe'
+            number: '01'
+            build: true
+            allow_remove: false
+            config: blue
+      sbiamprod:
+        build: true
+        allow_remove: false
+        config: blue
+        environments:
+          prod01:
+            name: 'prod'
+            number: '01'
+            build: true
+            allow_remove: false
+            config: blue
