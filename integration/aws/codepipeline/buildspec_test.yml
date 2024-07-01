@@ -26,30 +26,30 @@ phases:
       - git checkout ${github_branch}
       - BRANCH=$(bash -c 'if ! [ "${github_branch/"Feature/"}" = "github_branch" ] ; then echo ${github_branch/"Feature/"/"Feature-"}; else echo ${github_branch}; fi')
       - echo $BRANCH
-      - chmod +x ./integration/aws/scripts/git_tag.sh
-      #- ./integration/aws/scripts/git_tag.sh -e 'bruno.coelho@kcom.com' -u '${github_machine_user)' -o 'revision.txt'
-      - ./integration/aws/scripts/git_tag.sh -e '${github_machine_user_email}' -u '${github_machine_user}' -o 'revision.txt'
-      - LATEST_TAG=$(cat revision.txt)
-      - echo $LATEST_TAG
-      # Get file change list
-      - git diff-tree --no-commit-id --name-only -r ${COMMIT_HASH} > integration/aws/file_changes.txt
-      - echo "The following files were modified:" && cat integration/aws/file_changes.txt
-      # Check if changes in the commit are in scope for an Infrastructure build.
-      - if ! grep -q 'integration/\|bin/' "integration/aws/file_changes.txt"; then echo "Change out of scope, not proceeding with build!" && UPLOAD=false; else UPLOAD=true; fi
-      - cd -
-      # Create Artefact
-      - rm -rf /tmp/output-dir && mkdir /tmp/output-dir; fi
-      - if [ "$UPLOAD" = "true" ]; then zip -r -X $project_name-infrastructure-$LATEST_TAG.zip ./integration/aws ./bin; fi # -X avoids extra files that cause MD5 change
-      - if [ "$UPLOAD" = "true" ]; then cp $project_name-infrastructure-$LATEST_TAG.zip /tmp/output-dir; fi
-      # Push release to S3
-      - if [ "$UPLOAD" = "true" ]; then aws s3 cp $project_name-infrastructure-$LATEST_TAG.zip s3://$source_code_bucket --metadata '{"x-amz-meta-version":"'"${LATEST_TAG}"'", "x-amz-meta-commitid":"'"${COMMIT_HASH}"'"}'; fi
-      # Tag S3 Object
-      - if [ -"$UPLOAD" = "true" ]; then aws s3api put-object-tagging --bucket $source_code_bucket --key $project_name-infrastructure-$LATEST_TAG.zip --tagging "TagSet=[{Key="version" ,Value="${LATEST_TAG}"}, {Key="commitid" ,Value="${COMMIT_HASH}"}]"; fi
-      # Update latest artefact to this release
-      - if [ "$UPLOAD" = "true" ]; then aws s3 cp $project_name-infrastructure-$LATEST_TAG.zip s3://$source_code_bucket/$project_name-infrastructure-$BRANCH-latest.zip --metadata '{"x-amz-meta-version":"'"${LATEST_TAG}"'", "x-amz-meta-commitid":"'"${COMMIT_HASH}"'"}'; fi
-      - if [ "$UPLOAD" = "true" ]; then aws s3api put-object-tagging --bucket $source_code_bucket --key $project_name-infrastructure-$BRANCH-latest.zip --tagging "TagSet=[{Key="version" ,Value="${LATEST_TAG}"}, {Key="commitid" ,Value="${COMMIT_HASH}"}]"; fi
-      # update SSM with the latest release tag
-      - if [ "$UPLOAD" = "true" ]; then aws ssm put-parameter --name "/codebuild/infrastructure_$BRANCH_latest" --type "String" --value "$LATEST_TAG" --overwrite; fi
+#      - chmod +x ./integration/aws/scripts/git_tag.sh
+#      #- ./integration/aws/scripts/git_tag.sh -e 'bruno.coelho@kcom.com' -u '${github_machine_user)' -o 'revision.txt'
+#      - ./integration/aws/scripts/git_tag.sh -e '${github_machine_user_email}' -u '${github_machine_user}' -o 'revision.txt'
+#      - LATEST_TAG=$(cat revision.txt)
+#      - echo $LATEST_TAG
+#      # Get file change list
+#      - git diff-tree --no-commit-id --name-only -r ${COMMIT_HASH} > integration/aws/file_changes.txt
+#      - echo "The following files were modified:" && cat integration/aws/file_changes.txt
+#      # Check if changes in the commit are in scope for an Infrastructure build.
+#      - if ! grep -q 'integration/\|bin/' "integration/aws/file_changes.txt"; then echo "Change out of scope, not proceeding with build!" && UPLOAD=false; else UPLOAD=true; fi
+#      - cd -
+#      # Create Artefact
+#      - rm -rf /tmp/output-dir && mkdir /tmp/output-dir; fi
+#      - if [ "$UPLOAD" = "true" ]; then zip -r -X $project_name-infrastructure-$LATEST_TAG.zip ./integration/aws ./bin; fi # -X avoids extra files that cause MD5 change
+#      - if [ "$UPLOAD" = "true" ]; then cp $project_name-infrastructure-$LATEST_TAG.zip /tmp/output-dir; fi
+#      # Push release to S3
+#      - if [ "$UPLOAD" = "true" ]; then aws s3 cp $project_name-infrastructure-$LATEST_TAG.zip s3://$source_code_bucket --metadata '{"x-amz-meta-version":"'"${LATEST_TAG}"'", "x-amz-meta-commitid":"'"${COMMIT_HASH}"'"}'; fi
+#      # Tag S3 Object
+#      - if [ -"$UPLOAD" = "true" ]; then aws s3api put-object-tagging --bucket $source_code_bucket --key $project_name-infrastructure-$LATEST_TAG.zip --tagging "TagSet=[{Key="version" ,Value="${LATEST_TAG}"}, {Key="commitid" ,Value="${COMMIT_HASH}"}]"; fi
+#      # Update latest artefact to this release
+#      - if [ "$UPLOAD" = "true" ]; then aws s3 cp $project_name-infrastructure-$LATEST_TAG.zip s3://$source_code_bucket/$project_name-infrastructure-$BRANCH-latest.zip --metadata '{"x-amz-meta-version":"'"${LATEST_TAG}"'", "x-amz-meta-commitid":"'"${COMMIT_HASH}"'"}'; fi
+#      - if [ "$UPLOAD" = "true" ]; then aws s3api put-object-tagging --bucket $source_code_bucket --key $project_name-infrastructure-$BRANCH-latest.zip --tagging "TagSet=[{Key="version" ,Value="${LATEST_TAG}"}, {Key="commitid" ,Value="${COMMIT_HASH}"}]"; fi
+#      # update SSM with the latest release tag
+#      - if [ "$UPLOAD" = "true" ]; then aws ssm put-parameter --name "/codebuild/infrastructure_$BRANCH_latest" --type "String" --value "$LATEST_TAG" --overwrite; fi
   post_build:
     commands:
       - echo "Entered the post build phase..."
